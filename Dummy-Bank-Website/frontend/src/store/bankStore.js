@@ -43,10 +43,10 @@ const useBankStore = create((set, get) => ({
     }
   },
 
-  signup: async (name, email, password) => {
+  signup: async (name, email, password, pin) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.post('/auth/signup', { name, email, password });
+      const res = await api.post('/auth/signup', { name, email, password, pin });
       const { token, ...userData } = res.data;
 
       localStorage.setItem('token', token);
@@ -140,10 +140,10 @@ const useBankStore = create((set, get) => ({
     }
   },
 
-  transfer: async (recipientUpi, amount, note) => {
+  transfer: async (recipientUpi, amount, note, pin) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.post('/transactions/transfer', { recipientUpi, amount, note });
+      const res = await api.post('/transactions/transfer', { recipientUpi, amount, note, pin });
 
       // Update local state
       const { balance, transaction } = res.data;

@@ -28,16 +28,16 @@ const searchUsers = async (req, res) => {
 const addContact = async (req, res) => {
   const { contactId } = req.body;
 
-  const user = await User.findById(req.user.id);
-
-  if (user.contacts.includes(contactId)) {
-    return res.status(400).json({ message: 'Contact already added' });
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { $addToSet: { contacts: contactId } }, // $addToSet prevents duplicates automatically
+      { new: true }
+    );
+    res.json(user.contacts);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
   }
-
-  user.contacts.push(contactId);
-  await user.save();
-
-  res.json(user.contacts);
 };
 
 // @desc    Get all contacts

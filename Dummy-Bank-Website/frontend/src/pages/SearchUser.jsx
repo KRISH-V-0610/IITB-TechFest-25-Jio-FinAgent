@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useBankStore from '../store/bankStore'
-import { Search, User, ArrowRight, Loader2 } from 'lucide-react'
+import { Search, User, ArrowRight, Loader2, UserPlus, Check } from 'lucide-react'
 
 const SearchUser = () => {
   const [query, setQuery] = useState('')
@@ -121,26 +121,56 @@ const SearchUser = () => {
             )}
           </div>
         ) : (
-          displayResults.map(user => (
-            <button
-              key={user._id || user.id}
-              onClick={() => handleSelectUser(user)}
-              className="w-full flex items-center justify-between p-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800/50 hover:border-zinc-700 rounded-xl transition-all group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center group-hover:bg-zinc-700 transition-colors">
-                  <User size={20} className="text-zinc-400 group-hover:text-white" />
+          displayResults.map(user => {
+            const isContact = contacts.some(c => c._id === user._id || c._id === user.id);
+            return (
+              <div
+                key={user._id || user.id}
+                className="w-full flex items-center justify-between p-4 bg-zinc-900 border border-zinc-800/50 rounded-xl transition-all group"
+              >
+                <div onClick={() => handleSelectUser(user)} className="flex items-center gap-4 cursor-pointer flex-grow">
+                  <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center group-hover:bg-zinc-700 transition-colors">
+                    <User size={20} className="text-zinc-400 group-hover:text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-medium text-white">{user.name}</p>
+                    <p className="text-xs text-zinc-500 font-mono">{user.upiId || user.upi}</p>
+                  </div>
                 </div>
-                <div className="text-left">
-                  <p className="font-medium text-white">{user.name}</p>
-                  <p className="text-xs text-zinc-500 font-mono">{user.upiId || user.upi}</p>
+
+                <div className="flex items-center gap-2">
+                  {/* ADD CONTACT BUTTON (Only show if searching and not already a contact) */}
+                  {isQuerying && !isContact && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent navigating to transfer
+                        useBankStore.getState().addContact(user._id || user.id);
+                      }}
+                      className="p-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded-lg transition-colors"
+                      title="Add to Contacts"
+                    >
+                      <UserPlus size={18} />
+                    </button>
+                  )}
+
+                  {/* SHOW ADDED STATUS */}
+                  {isQuerying && isContact && (
+                    <div className="p-2 text-emerald-500" title="Saved">
+                      <Check size={18} />
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => handleSelectUser(user)}
+                    className="bg-orange-600/10 text-orange-600 p-2 rounded-lg hover:bg-orange-600 hover:text-white transition-all"
+                    title="Pay"
+                  >
+                    <ArrowRight size={18} />
+                  </button>
                 </div>
               </div>
-              <div className="bg-orange-600/10 text-orange-600 p-2 rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-all">
-                <ArrowRight size={18} />
-              </div>
-            </button>
-          ))
+            )
+          })
         )}
       </div>
     </div>

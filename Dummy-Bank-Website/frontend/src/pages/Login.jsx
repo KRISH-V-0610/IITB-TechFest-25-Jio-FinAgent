@@ -5,7 +5,7 @@ import { Landmark, ArrowRight, Loader2 } from 'lucide-react'
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true)
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' })
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', pin: '' })
   const navigate = useNavigate()
 
   const { login, signup, isLoading, error } = useBankStore()
@@ -17,7 +17,7 @@ const Login = () => {
       const res = await login(formData.email, formData.password)
       if (res.success) navigate('/')
     } else {
-      const res = await signup(formData.name, formData.email, formData.password)
+      const res = await signup(formData.name, formData.email, formData.password, formData.pin)
       if (res.success) navigate('/')
     }
   }
@@ -73,6 +73,22 @@ const Login = () => {
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
             />
           </div>
+
+          {!isLogin && (
+            <div>
+              <label className="block text-xs font-medium text-zinc-500 uppercase mb-1">Set Transaction PIN (4-digit)</label>
+              <input
+                type="password"
+                required
+                maxLength={4}
+                pattern="\d{4}"
+                placeholder="1234"
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-600 focus:outline-none tracking-widest text-center font-bold"
+                value={formData.pin}
+                onChange={(e) => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+              />
+            </div>
+          )}
 
           <button
             type="submit"

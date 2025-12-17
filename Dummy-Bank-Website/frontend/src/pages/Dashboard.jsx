@@ -39,9 +39,7 @@ const Dashboard = () => {
 
       {/* BALANCE CARD */}
       <div className="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 rounded-2xl p-6 shadow-xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-4 opacity-50 pointer-events-none">
-          <TrendingUp size={120} className="text-zinc-800/50 transform rotate-12 translate-x-8 -translate-y-8" />
-        </div>
+        
         <div className="relative z-10">
           <p className="text-zinc-400 text-sm font-medium uppercase tracking-wider mb-1">Total Balance</p>
           <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-6">{formattedBalance}</h2>

@@ -10,6 +10,7 @@ const Confirmation = () => {
   const navigate = useNavigate()
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState('')
+  const [pin, setPin] = useState('')
 
   if (!state) return <div className="p-4 text-center">Invalid State</div>
 
@@ -17,8 +18,12 @@ const Confirmation = () => {
   const remainingBalance = balance - amount
 
   const handleConfirm = async () => {
+    if (!pin || pin.length !== 4) {
+      setError('Please enter your 4-digit PIN')
+      return;
+    }
     setIsProcessing(true)
-    const result = await transfer(recipient.upiId || recipient.upi, amount, note)
+    const result = await transfer(recipient.upiId || recipient.upi, amount, note, pin)
     if (result.success) {
       navigate('/success', { state: { transaction: result.transaction, recipient } })
     } else {
@@ -68,6 +73,21 @@ const Confirmation = () => {
             </div>
             <span className="font-mono font-bold text-emerald-500">₹{remainingBalance}</span>
           </div>
+        </div>
+
+        <div className="pt-2">
+          <label className="block text-center text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Enter 4-Digit PIN</label>
+          <input
+            type="password"
+            maxLength={4}
+            value={pin}
+            onChange={(e) => {
+              setPin(e.target.value.replace(/\D/g, '').slice(0, 4))
+              setError('')
+            }}
+            className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 px-4 text-white text-center text-2xl font-bold tracking-[0.5em] focus:outline-none focus:border-orange-500 transition-colors placeholder:tracking-normal"
+            placeholder="••••"
+          />
         </div>
 
         {error && <p className="text-red-400 text-center text-sm">{error}</p>}

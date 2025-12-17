@@ -1,10 +1,11 @@
+const bcrypt = require('bcryptjs');
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 
 // @desc    Transfer money
 // @route   POST /api/transactions/transfer
 const transferMoney = async (req, res) => {
-  const { recipientUpi, amount, note } = req.body;
+  const { recipientUpi, amount, note, pin } = req.body;
   const senderId = req.user.id;
   const transferAmount = Number(amount);
 
@@ -12,14 +13,29 @@ const transferMoney = async (req, res) => {
     return res.status(400).json({ message: 'Invalid Amount or Recipient' });
   }
 
+  if (!pin) {
+    return res.status(400).json({ message: 'PIN is required' });
+  }
+
   try {
-    // 1. Check if Recipient Exists FIRST to avoid deducting money if recipient is invalid
+    // 1. Fetch Sender to verify PIN
+    const sender = await User.findById(senderId);
+    if (!sender) {
+      return res.status(404).json({ message: 'Sender not found' });
+    }
+
+    const isPinCorrect = await bcrypt.compare(pin, sender.pin);
+    if (!isPinCorrect) {
+      return res.status(401).json({ message: 'Incorrect PIN' });
+    }
+
+    // 2. Check if Recipient Exists
     const recipient = await User.findOne({ upiId: recipientUpi });
     if (!recipient) {
       return res.status(404).json({ message: 'Recipient not found' });
     }
 
-    if (senderId === recipient._id.toString()) {
+    if (sender.upiId === recipient.upiId) {
       return res.status(400).json({ message: 'Cannot self-transfer' });
     }
 
