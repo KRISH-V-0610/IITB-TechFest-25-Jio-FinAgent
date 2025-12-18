@@ -1,7 +1,4 @@
-browser-use
+fastapi
+uvicorn[standard]
 python-dotenv
-langgraph
-playwright
-openai
-langchain-openai
-
+browser-use>=0.8.0

@@ -1,3 +1,5 @@
 .env
 
 memory.py
+
+__pycache__
