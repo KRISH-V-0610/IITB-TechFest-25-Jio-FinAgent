@@ -93,24 +93,36 @@ load_dotenv()
 if not os.getenv("BROWSER_USE_API_KEY"):
     raise RuntimeError("BROWSER_USE_API_KEY not found. Check .env file.")
 
-# agent.py
 import asyncio
+import re
 from workflow import build_graph
 from state import AgentState
 
+def parse_command(command: str):
+    # Simple regex for "Pay [Name] [Amount]"
+    # Handles "Pay Nisarg 5000" or "Pay Nisarg rs 5000"
+    match = re.search(r"pay\s+(\w+).*?(\d+)", command, re.IGNORECASE)
+    if match:
+        return match.group(1), match.group(2)
+    return None, None
+
 async def main():
     print("\n🤖 FinAgent — Human-in-the-Loop Mode")
-    print("Agent will NEVER act at auth or PIN without consent.\n")
+    print("Safe Agent: Will NOT auto-login. Will NOT auto-PIN.\n")
 
-    user_command = input("> ")
+    user_command = input("Enter command (e.g., 'Pay Nisarg 5000'): ")
+
+    recipient, amount = parse_command(user_command)
+    
+    if not recipient or not amount:
+        print("⚠️ Could not understand command. Please use format: 'Pay [Name] [Amount]'")
+        return
 
     state: AgentState = {
         "user_command": user_command,
-        "browser": None,
-        "auth_required": False,
-        "auth_choice": None,
+        "recipient": recipient,
+        "amount": amount,
         "logged_in": False,
-        "awaiting_pin": False,
         "task_completed": False,
     }
 

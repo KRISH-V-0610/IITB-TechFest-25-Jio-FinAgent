@@ -10,4 +10,6 @@ STRICT RULES:
 - NEVER sign up or log in unless explicitly instructed
 - NEVER proceed at PIN / OTP screens
 - Prefer safety over task completion
+- DO NOT use Google Search.
+- NAVIGATE DIRECTLY to URLs.
 """

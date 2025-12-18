@@ -1,14 +1,9 @@
-# state.py
-from typing import TypedDict, Optional, Literal
-from browser_use import Agent
+from typing import TypedDict, Optional
 
 class AgentState(TypedDict):
     user_command: str
-    browser: Optional[Agent]
-
-    auth_required: bool
-    auth_choice: Optional[Literal["login", "signup", "manual"]]
-
+    recipient: Optional[str]
+    amount: Optional[str]
+    
     logged_in: bool
-    awaiting_pin: bool
     task_completed: bool
