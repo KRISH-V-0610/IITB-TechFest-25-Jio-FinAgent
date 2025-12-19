@@ -179,10 +179,55 @@ app.add_middleware(
 )
 
 # ---------------- LOGGING TO WS ----------------
+import re
+
+# ---------------- LOGGING TO WS ----------------
 class WebSocketHandler(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
-        asyncio.create_task(safe_send(msg))
+        
+        # 1. Strip ANSI color codes (e.g. [34m, [0m)
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        msg = ansi_escape.sub('', msg)
+        
+        # 2. Filter specific noisy internal logs
+        if "[DownloadsWatchdog]" in msg:
+            return
+
+        # Natural Language Filtering
+        clean_msg = None
+        
+        if "🎯 Task:" in msg:
+            clean_msg = f"Goal: {msg.split('Task:', 1)[1].strip()}"
+        elif "🧠 Memory:" in msg:
+            clean_msg = f"Thinking: {msg.split('Memory:', 1)[1].strip()}"
+        elif "📍 Step" in msg:
+            clean_msg = f"Step {msg.split('Step', 1)[1].strip()}"
+        elif "▶️" in msg:
+            # Action parsing
+            action_part = msg.split('▶️', 1)[1].strip()
+            if "navigate" in action_part:
+                url = action_part.split('url:', 1)[-1].strip()
+                clean_msg = f"Action: Navigating to {url}"
+            elif "click" in action_part:
+                clean_msg = f"Action: Clicking element"
+            elif "type" in action_part:
+                clean_msg = f"Action: Typing input"
+            elif "done" in action_part:
+                 clean_msg = f"Action: Task Done"
+            else:
+                clean_msg = f"Action: {action_part}"
+        elif "✅" in msg:
+             clean_msg = f"Success: {msg.split('✅', 1)[1].strip()}"
+        elif "📄 Final Result:" in msg:
+             clean_msg = f"Result: {msg.split('Result:', 1)[1].strip()}"
+        elif "SYSTEM:" in msg: 
+            # Allow explicit system messages from our code (Already formatted)
+            clean_msg = msg.replace("SYSTEM: ", "")
+        
+        # Only send if we have a clean message (suppress noisy logs)
+        if clean_msg:
+             asyncio.create_task(safe_send(clean_msg))
 
 
 logger = logging.getLogger("finagent")

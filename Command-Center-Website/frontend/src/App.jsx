@@ -19,7 +19,7 @@ const App = () => {
 
       socket.onopen = () => {
         setIsConnected(true)
-        addLog("SYSTEM", "✅ Connected to FinAgent")
+        // Backend sends "Connected" message, so no need to log here locally
       }
 
       socket.onclose = () => {
