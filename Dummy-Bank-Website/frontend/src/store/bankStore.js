@@ -16,8 +16,21 @@ const useBankStore = create((set, get) => ({
   balance: 0,
   transactions: [],
   contacts: [],
+  contacts: [],
   isLoading: false,
   error: null,
+  theme: localStorage.getItem('theme') || 'dark',
+
+  // Theme Action
+  toggleTheme: () => {
+    const current = get().theme;
+    const next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('theme', next);
+    set({ theme: next });
+
+    // Update DOM immediately
+    document.documentElement.setAttribute('data-theme', next);
+  },
 
   // Auth Actions
   login: async (email, password) => {
@@ -140,10 +153,10 @@ const useBankStore = create((set, get) => ({
     }
   },
 
-  transfer: async (recipientUpi, amount, note, pin) => {
+  transfer: async (recipientUpi, amount, note, pin, category = 'TRANSFER', billDetails = null) => {
     set({ isLoading: true, error: null });
     try {
-      const res = await api.post('/transactions/transfer', { recipientUpi, amount, note, pin });
+      const res = await api.post('/transactions/transfer', { recipientUpi, amount, note, pin, category, billDetails });
 
       // Update local state
       const { balance, transaction } = res.data;
@@ -151,6 +164,12 @@ const useBankStore = create((set, get) => ({
 
       // Update user balance in store and localStorage
       const updatedUser = { ...get().user, balance: newBalance };
+
+      // Update gold balance if present
+      if (res.data.goldBalance !== undefined) {
+        updatedUser.goldBalance = res.data.goldBalance;
+      }
+
       set({ user: updatedUser, isLoading: false });
       localStorage.setItem('user', JSON.stringify(updatedUser));
 

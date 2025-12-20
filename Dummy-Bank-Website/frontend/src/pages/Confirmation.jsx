@@ -14,16 +14,17 @@ const Confirmation = () => {
 
   if (!state) return <div className="p-4 text-center">Invalid State</div>
 
-  const { recipient, amount, note } = state
-  const remainingBalance = balance - amount
-
+  /* Logic for Transfer */
   const handleConfirm = async () => {
     if (!pin || pin.length !== 4) {
       setError('Please enter your 4-digit PIN')
       return;
     }
     setIsProcessing(true)
-    const result = await transfer(recipient.upiId || recipient.upi, amount, note, pin)
+
+    // We debit the TOTAL amount (including fees/tax)
+    const result = await transfer(recipient.upiId || recipient.upi, totalAmount, note, pin, category)
+
     if (result.success) {
       navigate('/success', { state: { transaction: result.transaction, recipient } })
     } else {
@@ -32,13 +33,23 @@ const Confirmation = () => {
     }
   }
 
+  const { recipient, amount, note, category, fee, tax, isGold } = state
+  const totalAmount = (parseFloat(amount) + (parseFloat(fee) || 0) + (parseFloat(tax) || 0)).toFixed(2)
+  const remainingBalance = (balance - totalAmount).toFixed(2)
+
   return (
     <div className="max-w-md mx-auto py-8">
-      <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-sm text-zinc-500 hover:text-white transition-colors">
-        <ArrowRight className="rotate-180" size={16} />
-        Back to Edit
+      <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 bg-zinc-100 hover:bg-white text-black px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg shadow-white/5">
+        <ArrowRight className="rotate-180" size={18} /> Back to Edit
       </button>
-      <h1 className="text-2xl font-bold text-white mb-8 text-center">Confirm Payment</h1>
+      <h1 className="text-2xl font-bold text-white mb-2 text-center">Confirm Payment</h1>
+      {isGold && (
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center gap-2 bg-yellow-500/10 text-yellow-500 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/20 animate-pulse">
+            Price valid for 04:59
+          </div>
+        </div>
+      )}
 
       {/* SUMMARY CARD */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-6 shadow-2xl relative overflow-hidden">
@@ -46,9 +57,9 @@ const Confirmation = () => {
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-red-600"></div>
 
         <div className="text-center pb-6 border-b border-zinc-800">
-          <p className="text-zinc-500 text-sm font-medium uppercase tracking-wider mb-2">You are paying</p>
+          <p className="text-zinc-500 text-sm font-medium uppercase tracking-wider mb-2">Total Payable</p>
           <div className="flex items-center justify-center gap-1">
-            <span className="text-4xl font-bold text-white">₹{amount}</span>
+            <span className="text-4xl font-bold text-white">₹{totalAmount}</span>
           </div>
         </div>
 
@@ -59,6 +70,26 @@ const Confirmation = () => {
               <p className="font-bold text-white">{recipient.name}</p>
               <p className="text-xs text-zinc-500">{recipient.upiId || recipient.upi}</p>
             </div>
+          </div>
+
+          {/* BREAKDOWN */}
+          <div className="border-t border-zinc-800/50 pt-2 space-y-2">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-zinc-500">Amount</span>
+              <span className="text-zinc-300">₹{parseFloat(amount).toFixed(2)}</span>
+            </div>
+            {fee > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-zinc-500">Convenience Fee</span>
+                <span className="text-zinc-300">+₹{parseFloat(fee).toFixed(2)}</span>
+              </div>
+            )}
+            {tax > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-zinc-500">GST (3%)</span>
+                <span className="text-zinc-300">+₹{parseFloat(tax).toFixed(2)}</span>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-between items-center">

@@ -1,115 +1,83 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import useBankStore from '../store/bankStore'
-import { User, IndianRupee, ArrowRight } from 'lucide-react'
 
 const Transfer = () => {
   const { state } = useLocation()
-  const { user } = useBankStore()
-  const balance = user?.balance || 0
   const navigate = useNavigate()
+  const { user } = useBankStore()
 
-  const recipient = state?.recipient
+  if (!state?.to) return <div className="p-8 text-center text-zinc-500">No recipient selected</div>
 
+  const recipient = state.to
   const [amount, setAmount] = useState('')
   const [note, setNote] = useState('')
-  const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (!recipient) {
-      navigate('/search')
-    }
-  }, [recipient, navigate])
-
-  if (!recipient) {
-    return null
-  }
-
-  const handleProceed = (e) => {
-    e.preventDefault()
+  const handleNext = () => {
     const val = parseFloat(amount)
-    if (!val || val <= 0) {
-      setError('Please enter a valid amount')
-      return
+    if (val > 0 && val <= user.balance) {
+      navigate('/confirmation', { state: { recipient, amount: val, note, category: 'TRANSFER' } })
     }
-    if (val > balance) {
-      setError('Insufficient wallet balance')
-      return
-    }
-
-    // Navigate to Confirmation (High Risk Step)
-    navigate('/confirmation', {
-      state: {
-        recipient,
-        amount: val,
-        note
-      }
-    })
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors py-2 px-1 mb-4 group"
-      >
-        <div className="p-2 rounded-full bg-zinc-800 group-hover:bg-zinc-700 transition-colors">
-          <ArrowRight className="rotate-180" size={20} />
-        </div>
-        <span className="font-medium">Back</span>
-      </button>
+    <div className="max-w-md mx-auto py-10 animate-fade-in text-center">
 
-      {/* RECIPIENT CARD */}
-      <div className="flex flex-col items-center justify-center py-6">
-        <div className="w-16 h-16 rounded-full bg-orange-600 flex items-center justify-center mb-4 text-2xl font-bold text-white shadow-lg shadow-orange-900/40">
-          {recipient.name[0]}
+      {/* RECIPIENT HEADER */}
+      {/* RECIPIENT HEADER */}
+      <div className="mb-10 relative">
+        <button onClick={() => navigate(-1)} className="absolute left-0 top-0 flex items-center gap-2 bg-zinc-100 hover:bg-white text-black px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg shadow-white/5 z-10">
+          <ArrowLeft size={18} /> Back
+        </button>
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-zinc-700 to-zinc-800 flex items-center justify-center text-2xl font-bold border border-zinc-600 text-white shadow-lg mx-auto mb-4 mt-8 md:mt-0">
+          {recipient.name.charAt(0)}
         </div>
-        <h2 className="text-xl font-bold text-white text-center">Paying {recipient.name}</h2>
-        <p className="text-zinc-500 font-mono text-sm">{recipient.upiId || recipient.upi}</p>
+        <p className="text-zinc-500 text-sm uppercase tracking-widest font-bold mb-1">Paying to</p>
+        <h1 className="text-2xl font-bold text-white">{recipient.name}</h1>
+        <p className="text-zinc-500 font-mono mt-1">{recipient.upiId}</p>
       </div>
 
-      {/* AMOUNT INPUT FORM */}
-      <form onSubmit={handleProceed} className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 space-y-6">
-        <div>
-          <label className="block text-center text-xs font-bold text-zinc-500 uppercase tracking-widest mb-4">Enter Amount</label>
-          <div className="relative max-w-[200px] mx-auto">
-            <IndianRupee size={32} className="absolute left-0 top-1/2 -translate-y-1/2 text-white" />
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value)
-                setError('')
-              }}
-              placeholder="0"
-              className="w-full bg-transparent text-5xl font-bold text-white text-center focus:outline-none placeholder:text-zinc-700 no-spinners pl-8"
-              autoFocus
-            />
-          </div>
+      {/* HUGE AMOUNT INPUT */}
+      <div className="mb-10">
+        <div className="flex items-center justify-center gap-1 text-white">
+          <span className="text-4xl font-bold text-zinc-500">₹</span>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0"
+            autoFocus
+            className="bg-transparent text-6xl md:text-7xl font-bold w-[250px] text-center focus:outline-none placeholder:text-zinc-800"
+          />
         </div>
+        {amount > user.balance && (
+          <p className="text-red-500 text-sm font-bold mt-4 bg-red-500/10 inline-block px-3 py-1 rounded-full border border-red-500/20">
+            Insufficient Balance: ₹{user.balance}
+          </p>
+        )}
+      </div>
 
-        {error && <div className="text-red-400 text-sm text-center bg-red-400/10 py-2 rounded-lg">{error}</div>}
-
-        <div className="px-4 py-3 bg-zinc-950 rounded-xl border border-zinc-800 flex items-center justify-between text-sm">
-          <span className="text-zinc-500">From Wallet Balance</span>
-          <span className="text-white font-mono">₹{balance}</span>
-        </div>
-
+      {/* NOTE INPUT */}
+      <div className="max-w-xs mx-auto mb-10">
         <input
           type="text"
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="Add a note (optional)"
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-3 px-4 text-white text-sm focus:outline-none focus:border-zinc-700 transition-colors placeholder:text-zinc-600 text-center"
+          placeholder="What's this for?"
+          className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 px-4 text-center text-white focus:outline-none focus:border-brand-primary transition-all placeholder:text-zinc-600"
         />
+      </div>
 
-        <button
-          type="submit"
-          className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-orange-900/20 active:scale-[0.98]"
-        >
-          Proceed to Pay
-        </button>
-      </form>
+      {/* ACTION */}
+      <button
+        onClick={handleNext}
+        disabled={!amount || amount <= 0 || amount > user.balance}
+        className="w-full max-w-xs bg-white text-black font-bold py-4 rounded-full hover:scale-105 transition-all shadow-lg shadow-white/10 disabled:opacity-50 disabled:hover:scale-100"
+      >
+        Proceed to Pay
+      </button>
+
     </div>
   )
 }

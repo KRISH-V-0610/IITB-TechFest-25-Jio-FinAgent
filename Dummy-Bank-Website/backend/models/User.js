@@ -7,7 +7,13 @@ const userSchema = new mongoose.Schema({
   pin: { type: String, required: true },
   upiId: { type: String, required: true, unique: true },
   balance: { type: Number, default: 10000 },
+  goldBalance: { type: Number, default: 0 },
   contacts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  electricityDetails: {
+    consumerNumber: { type: String },
+    board: { type: String },
+    state: { type: String }
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

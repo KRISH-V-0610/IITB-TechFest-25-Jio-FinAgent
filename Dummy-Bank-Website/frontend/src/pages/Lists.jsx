@@ -9,8 +9,8 @@ export const Contacts = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-colors group">
-          <ArrowRight className="rotate-180 group-hover:-translate-x-1 transition-transform" size={24} />
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 bg-zinc-100 hover:bg-white text-black px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg shadow-white/5">
+          <ArrowRight className="rotate-180" size={18} /> Back
         </button>
         <h1 className="text-2xl font-bold text-white">Contacts</h1>
       </div>
@@ -38,7 +38,7 @@ export const Contacts = () => {
               </div>
               <Link
                 to="/transfer"
-                state={{ recipient: contact }}
+                state={{ to: contact }}
                 className="text-sm bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 Pay
@@ -58,8 +58,8 @@ export const Transactions = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 -ml-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-full transition-colors">
-          <ArrowRight className="rotate-180" size={24} />
+        <button onClick={() => navigate(-1)} className="flex items-center gap-2 bg-zinc-100 hover:bg-white text-black px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-lg shadow-white/5">
+          <ArrowRight className="rotate-180" size={18} /> Back
         </button>
         <h1 className="text-2xl font-bold text-white">Transaction History</h1>
       </div>

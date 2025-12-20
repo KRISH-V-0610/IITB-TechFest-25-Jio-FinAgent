@@ -1,41 +1,50 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useBankStore from '../store/bankStore'
-import { Landmark, ArrowRight, Loader2 } from 'lucide-react'
+import { Wallet, ArrowRight, Loader2, Lock, Mail, User } from 'lucide-react'
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true)
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', pin: '' })
-  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [pin, setPin] = useState('')
 
+  const navigate = useNavigate()
   const { login, signup, isLoading, error } = useBankStore()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
+    let res
     if (isLogin) {
-      const res = await login(formData.email, formData.password)
-      if (res.success) navigate('/')
+      res = await login(email, password)
     } else {
-      const res = await signup(formData.name, formData.email, formData.password, formData.pin)
-      if (res.success) navigate('/')
+      res = await signup(name, email, password, pin)
+    }
+
+    if (res.success) {
+      navigate('/')
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="bg-orange-600 p-2 rounded-xl">
-          <Landmark className="text-white" size={32} />
-        </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Dummy Bank</h1>
-      </div>
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-brand-primary/20 rounded-full blur-[100px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[100px]"></div>
 
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-8 rounded-2xl shadow-2xl">
-        <h2 className="text-xl font-bold text-white mb-6">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+      <div className="w-full max-w-md glass-card rounded-3xl p-8 relative z-10 animate-fade-in">
+
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 bg-gradient-to-tr from-brand-primary to-brand-secondary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-xl shadow-brand-primary/20">
+            <Wallet className="text-white" size={32} />
+          </div>
+          <h1 className="text-3xl font-bold mb-2 tracking-tight">FinAgent</h1>
+          <p className="text-zinc-400">Next Gen Banking for the Future</p>
+        </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg text-sm mb-4">
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-xl text-sm mb-6 text-center font-medium">
             {error}
           </div>
         )}
@@ -43,49 +52,51 @@ const Login = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           {!isLogin && (
             <div>
-              <label className="block text-xs font-medium text-zinc-500 uppercase mb-1">Full Name</label>
-              <input
-                type="text"
-                required
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-600 focus:outline-none"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all placeholder:text-zinc-600"
+                />
+              </div>
             </div>
           )}
-          <div>
-            <label className="block text-xs font-medium text-zinc-500 uppercase mb-1">Email Address</label>
+
+          <div className="relative">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
             <input
               type="email"
-              required
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-600 focus:outline-none"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all placeholder:text-zinc-600"
             />
           </div>
-          <div>
-            <label className="block text-xs font-medium text-zinc-500 uppercase mb-1">Password</label>
+
+          <div className="relative">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
             <input
               type="password"
-              required
-              className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-600 focus:outline-none"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all placeholder:text-zinc-600"
             />
           </div>
 
           {!isLogin && (
-            <div>
-              <label className="block text-xs font-medium text-zinc-500 uppercase mb-1">Set Transaction PIN (4-digit)</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
               <input
                 type="password"
-                required
+                placeholder="Set 4-Digit PIN"
                 maxLength={4}
-                pattern="\d{4}"
-                placeholder="1234"
-                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-white focus:ring-2 focus:ring-orange-600 focus:outline-none tracking-widest text-center font-bold"
-                value={formData.pin}
-                onChange={(e) => setFormData({ ...formData, pin: e.target.value.replace(/\D/g, '').slice(0, 4) })}
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                className="w-full bg-zinc-900/50 border border-zinc-700/50 rounded-xl py-3.5 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all placeholder:text-zinc-600"
               />
             </div>
           )}
@@ -93,19 +104,22 @@ const Login = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 mt-4"
+            className="w-full bg-gradient-to-r from-brand-primary to-brand-secondary hover:from-brand-accent hover:to-brand-primary text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-brand-primary/20 mt-4 flex items-center justify-center gap-2"
           >
-            {isLoading ? <Loader2 className="animate-spin" /> : (isLogin ? 'Sign In' : 'Create Account')}
-            {!isLoading && <ArrowRight size={18} />}
+            {isLoading ? <Loader2 className="animate-spin" /> : (
+              <>
+                {isLogin ? 'Sign In' : 'Create Account'} <ArrowRight size={18} />
+              </>
+            )}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <button
             onClick={() => setIsLogin(!isLogin)}
-            className="text-sm text-zinc-500 hover:text-white transition-colors"
+            className="text-zinc-400 hover:text-white text-sm transition-colors"
           >
-            {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
+            {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
           </button>
         </div>
       </div>

@@ -9,6 +9,7 @@ const generateToken = (id) => {
 // @desc    Register new user
 // @route   POST /api/auth/signup
 const registerUser = async (req, res) => {
+  console.log("DEBUG: registerUser called with:", req.body);
   const { name, email, password, pin } = req.body;
 
   if (!name || !email || !password || !pin) {
@@ -21,8 +22,9 @@ const registerUser = async (req, res) => {
     return res.status(400).json({ message: 'User already exists' });
   }
 
-  // Generate Dummy UPI ID
-  const upiId = `${name.toLowerCase().replace(/\s/g, '')}@dummy`;
+  // Generate Dummy UPI ID with random suffix to avoid collisions
+  const randomSuffix = Math.floor(100 + Math.random() * 900); // 3 digit random number
+  const upiId = `${name.toLowerCase().replace(/\s/g, '')}${randomSuffix}@dummy`;
 
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
@@ -91,8 +93,46 @@ const getMe = async (req, res) => {
   }
 };
 
+// @desc    Update user profile
+// @route   PUT /api/auth/profile
+const updateProfile = async (req, res) => {
+  const user = await User.findById(req.user.id);
+
+  if (user) {
+    user.name = req.body.name || user.name;
+
+    // Check email uniqueness if changing
+    if (req.body.email && req.body.email !== user.email) {
+      const emailExists = await User.findOne({ email: req.body.email });
+      if (emailExists) {
+        return res.status(400).json({ message: 'Email already in use' });
+      }
+      user.email = req.body.email;
+    }
+
+    if (req.body.pin) {
+      const salt = await bcrypt.genSalt(10);
+      user.pin = await bcrypt.hash(req.body.pin, salt);
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      upiId: updatedUser.upiId,
+      balance: updatedUser.balance,
+      token: generateToken(updatedUser.id),
+    });
+  } else {
+    res.status(404).json({ message: 'User not found' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getMe
+  getMe,
+  updateProfile
 };
